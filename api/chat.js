@@ -6,16 +6,26 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // CORS headers (update YOUR_APP_URL when you deploy)
+  // CORS headers - Secure origin validation
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5000',
-    'https://fitmon.vercel.app', // Update this with your actual Vercel URL
+    'https://fitmon-six.vercel.app',
+    'https://fitmon-david-fierros-projects-de8eae2f.vercel.app',
+    'https://fitmon-git-master-david-fierros-projects-de8eae2f.vercel.app'
   ];
+
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+
+  // Explicit CORS validation - reject unauthorized origins
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+  } else if (origin) {
+    // Log unauthorized access attempts
+    console.warn(`Unauthorized origin blocked: ${origin}`);
+    return res.status(403).json({ error: 'Origin not allowed' });
   }
+
   res.setHeader('Access-Control-Allow-Methods', 'POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
