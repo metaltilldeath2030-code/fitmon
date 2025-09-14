@@ -68,26 +68,27 @@ Be accurate with nutritional estimates based on typical serving sizes.`,
   };
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: prompts[type] },
-        ],
-        temperature: 0.1,
+        model: 'claude-3-haiku-20240307',
         max_tokens: 100,
-        n: 1,
-      }),
+        messages: [{
+          role: 'user',
+          content: prompts[type]
+        }],
+        system: systemPrompt,
+        temperature: 0.1
+      })
     });
 
     if (!response.ok) {
-      console.error('OpenAI API error:', response.status);
+      console.error('Claude API error:', response.status);
       return res.status(500).json({ error: 'Analysis service unavailable' });
     }
 
@@ -96,9 +97,9 @@ Be accurate with nutritional estimates based on typical serving sizes.`,
     // Parse and validate response
     let result;
     try {
-      result = JSON.parse(data.choices[0].message.content);
+      result = JSON.parse(data.content[0].text);
     } catch (parseError) {
-      console.error('Failed to parse GPT response:', data.choices[0].message.content);
+      console.error('Failed to parse Claude response:', data.content[0].text);
       return res.status(500).json({ error: 'Invalid response format' });
     }
 
@@ -125,7 +126,7 @@ Be accurate with nutritional estimates based on typical serving sizes.`,
 
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Error calling OpenAI:', error);
+    console.error('Error calling Claude:', error);
     return res.status(500).json({ error: 'Analysis failed' });
   }
 }
