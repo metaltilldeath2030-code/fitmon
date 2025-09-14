@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>FitMon - AI Fitness Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      color: #111;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .streak {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+    }
+
+    .content {
+      padding: 1.5rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #f7f7f7;
+      padding: 1.25rem;
+      border-radius: 12px;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    .net-calories {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .net-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    .nav-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .nav-btn {
+      padding: 1rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .nav-btn:active {
+      transform: scale(0.98);
+    }
+
+    .nav-btn .emoji {
+      font-size: 2rem;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    .back-btn {
+      background: #e0e0e0;
+      color: #333;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      transition: background 0.2s;
+    }
+
+    .back-btn:hover {
+      background: #d0d0d0;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1rem;
+      resize: vertical;
+      min-height: 120px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .analyze-btn {
+      width: 100%;
+      padding: 1rem;
+      margin-top: 1rem;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .analyze-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .analyze-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .result-box {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: #f0f9ff;
+      border-left: 4px solid #667eea;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result-box.show {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+
+    .result-box.error {
+      background: #fef2f2;
+      border-color: #ef4444;
+    }
+
+    .result-box.success {
+      background: #f0fdf4;
+      border-color: #22c55e;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .mascot {
+      font-size: 4rem;
+      text-align: center;
+      margin: 1rem 0;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .description {
+      text-align: center;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    .result-details {
+      display: grid;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem;
+      background: white;
+      border-radius: 6px;
+    }
+
+    .result-label {
+      color: #666;
+    }
+
+    .result-value {
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.75rem;
+      }
+
+      .stat-value {
+        font-size: 1.75rem;
+      }
+
+      .net-value {
+        font-size: 2rem;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 100%);
+      }
+
+      .container {
+        background: #1f2937;
+        color: #f3f4f6;
+      }
+
+      .stat-card {
+        background: #374151;
+      }
+
+      .stat-value {
+        color: #f3f4f6;
+      }
+
+      textarea {
+        background: #374151;
+        color: #f3f4f6;
+        border-color: #4b5563;
+      }
+
+      .back-btn {
+        background: #4b5563;
+        color: #f3f4f6;
+      }
+
+      .result-box {
+        background: #374151;
+      }
+
+      .result-item {
+        background: #1f2937;
+      }
+
+      .result-value {
+        color: #f3f4f6;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Hub Section -->
+    <div id="hub" class="section active">
+      <div class="header">
+        <h1>🎮 FitMon</h1>
+        <span class="streak" id="streak">🔥 0 day streak</span>
+      </div>
+
+      <div class="content">
+        <div class="net-calories">
+          <div class="net-value" id="netCalories">0</div>
+          <div>Net Calories Today</div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="caloriesIn">0</div>
+            <div class="stat-label">🍔 Calories In</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="caloriesOut">0</div>
+            <div class="stat-label">🔥 Calories Burned</div>
+          </div>
+        </div>
+
+        <div class="nav-buttons">
+          <button class="nav-btn" onclick="showSection('gym')">
+            <span class="emoji">💪</span>
+            <span>Gym</span>
+          </button>
+          <button class="nav-btn" onclick="showSection('kitchen')">
+            <span class="emoji">🍽️</span>
+            <span>Kitchen</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gym Section -->
+    <div id="gym" class="section">
+      <div class="header">
+        <h1>💪 Gym Time</h1>
+      </div>
+
+      <div class="content">
+        <button class="back-btn" onclick="showSection('hub')">← Back to Hub</button>
+
+        <div class="mascot">🐻</div>
+        <p class="description">Tell Gym Bear about your workout!</p>
+
+        <textarea
+          id="workoutInput"
+          placeholder="e.g., 20 pushups, ran for 30 minutes, 3 sets of squats"
+          maxlength="200"
+        ></textarea>
+
+        <button class="analyze-btn" id="analyzeWorkout" onclick="analyzeWorkout()">
+          <span id="workoutBtnText">Analyze Workout</span>
+        </button>
+
+        <div class="result-box" id="workoutResult"></div>
+      </div>
+    </div>
+
+    <!-- Kitchen Section -->
+    <div id="kitchen" class="section">
+      <div class="header">
+        <h1>🍽️ Kitchen</h1>
+      </div>
+
+      <div class="content">
+        <button class="back-btn" onclick="showSection('hub')">← Back to Hub</button>
+
+        <div class="mascot">🧪</div>
+        <p class="description">Tell Slime Doc what you ate!</p>
+
+        <textarea
+          id="mealInput"
+          placeholder="e.g., grilled chicken with rice, 2 eggs and toast, large pizza"
+          maxlength="200"
+        ></textarea>
+
+        <button class="analyze-btn" id="analyzeMeal" onclick="analyzeMeal()">
+          <span id="mealBtnText">Analyze Meal</span>
+        </button>
+
+        <div class="result-box" id="mealResult"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // App state
+    let state = {
+      caloriesIn: 0,
+      caloriesOut: 0,
+      streak: 0,
+      lastActiveDate: null,
+      analyzing: false,
+    };
+
+    // Initialize app
+    function init() {
+      loadState();
+      updateDisplay();
+      checkStreak();
+    }
+
+    // Load state from localStorage
+    function loadState() {
+      const saved = localStorage.getItem('fitmonState');
+      if (saved) {
+        state = { ...state, ...JSON.parse(saved) };
+      }
+    }
+
+    // Save state to localStorage
+    function saveState() {
+      localStorage.setItem('fitmonState', JSON.stringify(state));
+      updateDisplay();
+    }
+
+    // Update display
+    function updateDisplay() {
+      document.getElementById('caloriesIn').textContent = state.caloriesIn;
+      document.getElementById('caloriesOut').textContent = state.caloriesOut;
+      document.getElementById('netCalories').textContent = state.caloriesIn - state.caloriesOut;
+      document.getElementById('streak').textContent = `🔥 ${state.streak} day streak`;
+    }
+
+    // Check and update streak
+    function checkStreak() {
+      const today = new Date().toDateString();
+      const lastActive = state.lastActiveDate;
+      if (!lastActive) {
+        state.streak = 0;
+      } else if (lastActive === today) {
+        // Same day, keep streak
+      } else {
+        const lastDate = new Date(lastActive);
+        const todayDate = new Date(today);
+        const daysDiff = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+        if (daysDiff === 1) {
+          // Consecutive day
+          state.streak++;
+        } else if (daysDiff > 1) {
+          // Streak broken
+          state.streak = 1;
+        }
+      }
+      state.lastActiveDate = today;
+      saveState();
+    }
+
+    // Switch sections
+    function showSection(name) {
+      document.querySelectorAll('.section').forEach((s) => s.classList.remove('active'));
+      document.getElementById(name).classList.add('active');
+      // Clear previous results when switching
+      document.getElementById('workoutResult').className = 'result-box';
+      document.getElementById('workoutResult').style.display = 'none';
+      document.getElementById('workoutResult').innerHTML = '';
+      document.getElementById('mealResult').className = 'result-box';
+      document.getElementById('mealResult').style.display = 'none';
+      document.getElementById('mealResult').innerHTML = '';
+    }
+
+    // Analyze workout
+    async function analyzeWorkout() {
+      if (state.analyzing) return;
+      const input = document.getElementById('workoutInput').value.trim();
+      if (!input) return;
+      const btn = document.getElementById('analyzeWorkout');
+      const btnText = document.getElementById('workoutBtnText');
+      const resultBox = document.getElementById('workoutResult');
+      state.analyzing = true;
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="loading"></span>';
+      resultBox.className = 'result-box';
+      resultBox.innerHTML = '';
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input, type: 'workout' }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Analysis failed');
+        }
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        // Update calories
+        if (data.calories_burned) {
+          state.caloriesOut += data.calories_burned;
+          state.lastActiveDate = new Date().toDateString();
+          saveState();
+        }
+        // Show result
+        resultBox.className = 'result-box success show';
+        resultBox.innerHTML = `\n          <div style="text-align: center; margin-bottom: 0.5rem;">\n            <strong style="font-size: 1.5rem;">Great job! 💪</strong>\n          </div>\n          <div class="result-details">\n            <div class="result-item">\n              <span class="result-label">Activity:</span>\n              <span class="result-value">${data.activity || 'Workout'}</span>\n            </div>\n            <div class="result-item">\n              <span class="result-label">Calories Burned:</span>\n              <span class="result-value">${data.calories_burned} cal</span>\n            </div>\n            ${data.duration_minutes ? `\n              <div class="result-item">\n                <span class="result-label">Duration:</span>\n                <span class="result-value">${data.duration_minutes} min</span>\n              </div>\n            ` : ''}\n          </div>\n        `;
+        // Clear input
+        document.getElementById('workoutInput').value = '';
+      } catch (error) {
+        resultBox.className = 'result-box error show';
+        resultBox.innerHTML = `⚠️ ${error.message}`;
+      } finally {
+        state.analyzing = false;
+        btn.disabled = false;
+        btnText.textContent = 'Analyze Workout';
+      }
+    }
+
+    // Analyze meal
+    async function analyzeMeal() {
+      if (state.analyzing) return;
+      const input = document.getElementById('mealInput').value.trim();
+      if (!input) return;
+      const btn = document.getElementById('analyzeMeal');
+      const btnText = document.getElementById('mealBtnText');
+      const resultBox = document.getElementById('mealResult');
+      state.analyzing = true;
+      btn.disabled = true;
+      btnText.innerHTML = '<span class="loading"></span>';
+      resultBox.className = 'result-box';
+      resultBox.innerHTML = '';
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input, type: 'food' }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Analysis failed');
+        }
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        // Update calories
+        if (data.calories) {
+          state.caloriesIn += data.calories;
+          state.lastActiveDate = new Date().toDateString();
+          saveState();
+        }
+        // Show result
+        resultBox.className = 'result-box success show';
+        resultBox.innerHTML = `\n          <div style="text-align: center; margin-bottom: 0.5rem;">\n            <strong style="font-size: 1.5rem;">Logged! 🍽️</strong>\n          </div>\n          <div class="result-details">\n            <div class="result-item">\n              <span class="result-label">Food:</span>\n              <span class="result-value">${data.food || 'Meal'}</span>\n            </div>\n            <div class="result-item">\n              <span class="result-label">Calories:</span>\n              <span class="result-value">${data.calories} cal</span>\n            </div>\n            <div class="result-item">\n              <span class="result-label">Protein:</span>\n              <span class="result-value">${data.protein}g</span>\n            </div>\n            <div class="result-item">\n              <span class="result-label">Carbs:</span>\n              <span class="result-value">${data.carbs}g</span>\n            </div>\n            <div class="result-item">\n              <span class="result-label">Fat:</span>\n              <span class="result-value">${data.fat}g</span>\n            </div>\n          </div>\n        `;
+        // Clear input
+        document.getElementById('mealInput').value = '';
+      } catch (error) {
+        resultBox.className = 'result-box error show';
+        resultBox.innerHTML = `⚠️ ${error.message}`;
+      } finally {
+        state.analyzing = false;
+        btn.disabled = false;
+        btnText.textContent = 'Analyze Meal';
+      }
+    }
+
+    // Handle Enter key in textareas (Ctrl+Enter triggers analysis)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        if (document.getElementById('gym').classList.contains('active')) {
+          analyzeWorkout();
+        } else if (document.getElementById('kitchen').classList.contains('active')) {
+          analyzeMeal();
+        }
+      }
+    });
+
+    // Initialise on load
+    init();
+  </script>
+</body>
+</html>
